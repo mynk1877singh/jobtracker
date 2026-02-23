@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: jobtracker
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/springtest
+    username: root
+    password: Root@1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
