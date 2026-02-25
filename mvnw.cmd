@@ -50,7 +50,6 @@ if ($env:MVNW_VERBOSE -eq "true") {
   $VerbosePreference = "Continue"
 }
 
-# calculate distributionUrl, requires .mvn/wrapper/maven-wrapper.properties
 $distributionUrl = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionUrl
 if (!$distributionUrl) {
   Write-Error "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
@@ -70,8 +69,6 @@ switch -wildcard -casesensitive ( $($distributionUrl -replace '^.*/','') ) {
   }
 }
 
-# apply MVNW_REPOURL and calculate MAVEN_HOME
-# maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
 if ($env:MVNW_REPOURL) {
   $MVNW_REPO_PATTERN = if ($USE_MVND -eq $False) { "/org/apache/maven/" } else { "/maven/mvnd/" }
   $distributionUrl = "$env:MVNW_REPOURL$MVNW_REPO_PATTERN$($distributionUrl -replace "^.*$MVNW_REPO_PATTERN",'')"
@@ -109,7 +106,6 @@ if (! $distributionUrlNameMain -or ($distributionUrlName -eq $distributionUrlNam
   Write-Error "distributionUrl is not valid, must end with *-bin.zip, but found $distributionUrl"
 }
 
-# prepare tmp dir
 $TMP_DOWNLOAD_DIR_HOLDER = New-TemporaryFile
 $TMP_DOWNLOAD_DIR = New-Item -Itemtype Directory -Path "$TMP_DOWNLOAD_DIR_HOLDER.dir"
 $TMP_DOWNLOAD_DIR_HOLDER.Delete() | Out-Null
@@ -122,7 +118,6 @@ trap {
 
 New-Item -Itemtype Directory -Path "$MAVEN_HOME_PARENT" -Force | Out-Null
 
-# Download and Install Apache Maven
 Write-Verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
 Write-Verbose "Downloading from: $distributionUrl"
 Write-Verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
@@ -134,7 +129,6 @@ if ($env:MVNW_USERNAME -and $env:MVNW_PASSWORD) {
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $webclient.DownloadFile($distributionUrl, "$TMP_DOWNLOAD_DIR/$distributionUrlName") | Out-Null
 
-# If specified, validate the SHA-256 sum of the Maven distribution zip file
 $distributionSha256Sum = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionSha256Sum
 if ($distributionSha256Sum) {
   if ($USE_MVND) {
@@ -146,20 +140,17 @@ if ($distributionSha256Sum) {
   }
 }
 
-# unzip and move
 Expand-Archive "$TMP_DOWNLOAD_DIR/$distributionUrlName" -DestinationPath "$TMP_DOWNLOAD_DIR" | Out-Null
 
-# Find the actual extracted directory name (handles snapshots where filename != directory name)
 $actualDistributionDir = ""
 
-# First try the expected directory name (for regular distributions)
 $expectedPath = Join-Path "$TMP_DOWNLOAD_DIR" "$distributionUrlNameMain"
 $expectedMvnPath = Join-Path "$expectedPath" "bin/$MVN_CMD"
 if ((Test-Path -Path $expectedPath -PathType Container) -and (Test-Path -Path $expectedMvnPath -PathType Leaf)) {
   $actualDistributionDir = $distributionUrlNameMain
 }
 
-# If not found, search for any directory with the Maven executable (for snapshots)
+
 if (!$actualDistributionDir) {
   Get-ChildItem -Path "$TMP_DOWNLOAD_DIR" -Directory | ForEach-Object {
     $testPath = Join-Path $_.FullName "bin/$MVN_CMD"
