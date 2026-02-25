@@ -9,28 +9,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let isValid = true;
 
-        // Reset error states
         emailInput.parentElement.classList.remove("error");
         passwordInput.parentElement.classList.remove("error");
 
-        // Validate Email
+     
         if (!emailInput.value.trim() || !emailInput.value.includes("@")) {
             emailInput.parentElement.classList.add("error");
             isValid = false;
         }
 
-        // Validate Password
+       
         if (!passwordInput.value.trim()) {
             passwordInput.parentElement.classList.add("error");
             isValid = false;
         }
 
-        // Simulate successful login
+       
         if (isValid) {
             submitBtn.textContent = "Signing in...";
             submitBtn.style.opacity = "0.8";
 
-            // Simulate API call delay
+           
             setTimeout(() => {
                 alert("Login successful! Redirecting to JobTracker dashboard...");
                 submitBtn.textContent = "Sign in";
